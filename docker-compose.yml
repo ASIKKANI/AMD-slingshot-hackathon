@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build: .
+    container_name: sahayak_orchestrator
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_URL=postgresql://user:password@db:5432/sahayak
+      - ROCM_ENABLED=1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+    # Exposing AMD NPU (kfd) and GPU (dri) devices to the container for ROCm
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri:/dev/dri"
+    group_add:
+      - video
+    ipc: host # Shared memory optimizations
+
+  redis:
+    image: redis:alpine
+    container_name: sahayak_redis
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:15-alpine
+    container_name: sahayak_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sahayak
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

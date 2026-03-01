@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sahayak | NPU Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Ledger & MFI Specific Fixes */
+        .page-title h2 {
+            flex-shrink: 0;
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .sync-card {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .credit-score {
+            margin-left: auto;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        /* Fix overlapping/wrapping on small screens */
+        @media (max-width: 400px) {
+            #btn-download-ledger {
+                padding: 4px 8px;
+                font-size: 0.65rem;
+            }
+
+            .sync-card {
+                padding: 12px;
+            }
+
+            .sync-info h4 {
+                font-size: 0.8rem;
+            }
+
+            .sync-info p {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="device-frame">
+        <div class="app-container">
+
+            <header class="app-header">
+                <div class="brand">
+                    <div class="logo-box"><ion-icon name="shield-half"></ion-icon></div>
+                    <div class="brand-text">
+                        <h1>Sahayak OS</h1>
+                        <p id="connection-text" class="online">AMD Edge Connected</p>
+                    </div>
+                </div>
+                <!-- Profile Action -->
+                <button class="profile-btn" id="btn-profile">
+                    <img src="https://ui-avatars.com/api/?name=Ravi+K&background=2563eb&color=fff&rounded=true"
+                        alt="Avatar">
+                </button>
+            </header>
+
+            <main class="app-content">
+
+                <!-- 1. DASHBOARD VIEW (HOMEPAGE) -->
+                <div class="view-section active" id="view-dashboard">
+                    <div class="page-title">
+                        <h2>Systems Overview</h2>
+                        <p>Core Agents & Hardware Status</p>
+                    </div>
+
+                    <!-- Hero Metric -->
+                    <div class="glass-card hero-card">
+                        <div class="hero-top">
+                            <span class="label">Today's Secured Earnings</span>
+                            <span class="badge profit">+12.4% vs Algorithmic Avg</span>
+                        </div>
+                        <div class="price-huge">₹<span id="dash-earnings">0.00</span></div>
+
+                        <div class="hero-subcontainer">
+                            <div class="sub-metric">
+                                <ion-icon name="time"></ion-icon>
+                                <div>
+                                    <h5>Avg Real Hourly Rate</h5>
+                                    <strong>₹240.5/hr</strong>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="sub-metric">
+                                <ion-icon name="close-circle" style="color:var(--color-danger)"></ion-icon>
+                                <div>
+                                    <h5>Loss-Makers Blocked</h5>
+                                    <strong><span id="dash-blocked">0</span> gigs</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <!-- Safety Tracker Card -->
+                        <div class="glass-card module-card npu">
+                            <div class="card-icon"><ion-icon name="fitness"></ion-icon></div>
+                            <h3>Safety Tracker</h3>
+                            <p id="hardware-mode-text">Smartphone Motion Sensors</p>
+                            <div class="status-indicator">
+                                <div class="dot pulse-green" id="npu-dot"></div>
+                                <span id="npu-text">Optimal (Active)</span>
+                            </div>
+                            <div class="mini-chart">
+                                <div class="bar h-30"></div>
+                                <div class="bar h-60"></div>
+                                <div class="bar h-40"></div>
+                                <div class="bar h-20 active-bar" id="npu-bar"></div>
+                            </div>
+                        </div>
+
+                        <!-- Config Controls Card -->
+                        <div class="glass-card module-card" style="border: 1px solid rgba(168, 85, 247, 0.3);">
+                            <div class="card-icon" style="background: rgba(168,85,247,0.1); color: #a855f7;"><ion-icon
+                                    name="options"></ion-icon></div>
+                            <h3>User Config</h3>
+                            <p>Tweak Algo Variables dynamically</p>
+
+                            <div class="input-group" style="margin-top: 8px;">
+                                <label style="font-size: 0.7rem; color: var(--text-secondary);">Petrol/Km (₹)</label>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <input type="number" id="input-petrol" value="2.5" step="0.5"
+                                        style="width: 60px; background: rgba(255,255,255,0.05); border: 1px solid var(--text-secondary); color: white; border-radius: 4px; padding: 4px 8px; font-size: 0.8rem;">
+                                    <button id="btn-save-petrol"
+                                        style="background: var(--accent-light); color: black; border: none; border-radius: 4px; padding: 4px 12px; font-weight: bold; cursor: pointer;">Save</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group"
+                                style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+                                <label style="font-size: 0.7rem; color: var(--text-secondary);">Advanced Sensors</label>
+                                <input type="checkbox" id="toggle-npu" checked
+                                    style="accent-color: var(--color-success); transform: scale(1.2);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. LIVE FEED VIEW (Map + Pings) -->
+
+                <div class="view-section" id="view-feed">
+                    <div class="map-window">
+                        <div class="protection-pill" id="protection-pill">
+                            <ion-icon name="shield"></ion-icon> AI Auto-Reject Active
+                        </div>
+                        <!-- Stylized Map abstract -->
+                        <div class="map-grid"></div>
+                        <div class="pulsing-blip"></div>
+                    </div>
+
+                    <div class="feed-header">
+                        <h2>Platform Scraper</h2>
+                        <div class="spinner-sm"></div>
+                    </div>
+
+                    <div id="ping-feed" class="ping-feed">
+                        <div class="empty-feed">
+                            <div class="scan-anim"></div>
+                            <p>Intercepting internal platform APIs and screen data...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. LEDGER VIEW -->
+                <div class="view-section" id="view-ledger">
+                    <div class="page-title">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; width:100%; gap: 10px;">
+                            <div style="flex:1;">
+                                <h2>Work-Proof Ledger</h2>
+                                <p style="font-size:0.75rem;">Verifiable Professional Identity</p>
+                            </div>
+                            <button id="btn-download-ledger" class="glass-pill"
+                                style="font-size:0.7rem; border-color:var(--accent-light); color:var(--accent-light); background:rgba(59,130,246,0.1); white-space: nowrap; flex-shrink:0;">
+                                <ion-icon name="download-outline"></ion-icon> Cert.
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card sync-card"
+                        style="display:flex; align-items:center; padding:12px; margin-bottom:12px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/1200px-UPI-Logo-vector.svg.png"
+                            style="width: 30px; opacity:0.9; margin-right:8px;">
+                        <div class="sync-info" style="flex:1;">
+                            <h4 style="font-size:0.85rem;">Bank Linked</h4>
+                            <p style="font-size:0.65rem;">GPay / PhonePe</p>
+                        </div>
+                        <div class="credit-score" style="text-align:right;">
+                            <div style="font-size:0.55rem; text-transform:uppercase; color:var(--text-secondary)">Score
+                            </div>
+                            <div style="font-weight:800; color:var(--color-success); font-size:0.9rem;">742</div>
+                        </div>
+                    </div>
+
+                    <!-- MFI / Loan Schemes -->
+                    <div style="margin: 20px 0;">
+                        <h4
+                            style="font-size: 0.85rem; color: var(--accent-light); margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                            <ion-icon name="briefcase-outline"></ion-icon> Available Bank Schemes (MFI)
+                        </h4>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                            <div class="glass-card"
+                                style="padding:10px; border:1px solid rgba(16,185,129,0.2); background:rgba(16,185,129,0.05); margin-bottom:0;">
+                                <div style="font-size:0.7rem; font-weight:700; color:white;">EV Bike Loan</div>
+                                <div style="font-size:0.55rem; color:var(--text-secondary); margin-top:2px;">4.5% p.a.
+                                </div>
+                                <button class="glass-pill"
+                                    style="margin-top:8px; width:100%; font-size:0.55rem; padding:4px; border-color:var(--color-success); color:var(--color-success);">Apply
+                                    Now</button>
+                            </div>
+                            <div class="glass-card"
+                                style="padding:10px; border:1px solid rgba(59,130,246,0.2); background:rgba(59,130,246,0.05); margin-bottom:0;">
+                                <div style="font-size:0.7rem; font-weight:700; color:white;">Micro-Credit</div>
+                                <div style="font-size:0.55rem; color:var(--text-secondary); margin-top:2px;">Up to ₹50k
+                                </div>
+                                <button class="glass-pill"
+                                    style="margin-top:8px; width:100%; font-size:0.55rem; padding:4px; border-color:var(--accent-light); color:var(--accent-light);">Claim</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ledger-list" id="ledger-list">
+                        <div class="empty-feed" style="margin-top:20px;">
+                            <p>No verified work logs yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-target="view-dashboard">
+                    <ion-icon name="grid"></ion-icon>
+                    <span>Hub</span>
+                </button>
+                <button class="nav-item" data-target="view-feed">
+                    <ion-icon name="flash"></ion-icon>
+                    <span>Scraper</span>
+                </button>
+                <button class="nav-item" data-target="view-ledger">
+                    <ion-icon name="receipt"></ion-icon>
+                    <span>Ledger</span>
+                </button>
+
+                <!-- Separator -->
+                <div class="nav-divider"></div>
+
+                <button class="nav-item demo-btn" id="demo-menu-trigger">
+                    <ion-icon name="play-circle"></ion-icon>
+                    <span>Simulate</span>
+                </button>
+            </nav>
+
+            <!-- Demo Sliding Overlay -->
+            <div class="demo-overlay" id="demo-overlay">
+                <div class="demo-drawer">
+                    <div class="drawer-header">
+                        <h3>Prototype Interactions</h3>
+                        <p>Inject MAS scenarios for video demo</p>
+                    </div>
+
+                    <div class="demo-actions">
+                        <button class="btn-demo safe" id="btn-ping-good">
+                            <div class="icon-wrap"><ion-icon name="arrow-up-circle"></ion-icon></div>
+                            <div class="btn-text">
+                                <strong>1. Profitable Route</strong>
+                                <span>Agent accepts & writes to Ledger</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-demo warning" id="btn-ping-bad">
+                            <div class="icon-wrap"><ion-icon name="arrow-down-circle"></ion-icon></div>
+                            <div class="btn-text">
+                                <strong>2. Loss-Making Route</strong>
+                                <span>Optimizer rejects low RHR ping</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-demo" id="btn-multi-ping"
+                            style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.3);">
+                            <div class="icon-wrap"
+                                style="background: #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.3);">
+                                <ion-icon name="albums"></ion-icon>
+                            </div>
+                            <div class="btn-text">
+                                <strong>3. Multi-Platform Compare</strong>
+                                <span>Simulate finding best of 3 apps</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-demo danger" id="btn-fatigue">
+                            <div class="icon-wrap"><ion-icon name="walk"></ion-icon></div>
+                            <div class="btn-text">
+                                <strong>4. Trigger Safety Override</strong>
+                                <span>Blocks high-stress orders dynamically</span>
+                            </div>
+                        </button>
+
+                        <button class="btn-demo safe" id="btn-reset"
+                            style="background: rgba(16, 185, 129, 0.1); border-color: var(--color-success);">
+                            <div class="icon-wrap" style="background: var(--color-success);"><ion-icon
+                                    name="refresh"></ion-icon></div>
+                            <div class="btn-text">
+                                <strong>5. Reset All Systems</strong>
+                                <span>Clear fatigue and resume demo</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile & Logs Modal -->
+            <div class="demo-overlay" id="profile-overlay">
+                <div class="demo-drawer" style="height: 70vh;">
+                    <div class="drawer-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3>Driver Profile & Logs</h3>
+                            <p>Monthly Summary & Petrol Tracking</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap: 12px;">
+                            <select id="month-selector"
+                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 0.85rem; outline: none;">
+                                <option value="0" style="color: black;">January</option>
+                                <option value="1" style="color: black;">February</option>
+                                <option value="2" style="color: black;">March</option>
+                                <option value="3" style="color: black;">April</option>
+                                <option value="4" style="color: black;">May</option>
+                                <option value="5" style="color: black;">June</option>
+                                <option value="6" style="color: black;">July</option>
+                                <option value="7" style="color: black;">August</option>
+                                <option value="8" style="color: black;">September</option>
+                                <option value="9" style="color: black;" selected>October</option>
+                                <option value="10" style="color: black;">November</option>
+                                <option value="11" style="color: black;">December</option>
+                            </select>
+                            <button id="btn-close-profile"
+                                style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><ion-icon
+                                    name="close-circle"></ion-icon></button>
+                        </div>
+                    </div>
+                    <div style="padding: 16px; overflow-y: auto; height: calc(100% - 60px);">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: var(--accent-light); margin-bottom:10px;">Monthly Accepted Gigs</h4>
+                            <div id="monthly-gig-logs"
+                                style="background: rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:0.85rem;">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent-light); margin-bottom:10px;">Petrol Expenditure Log</h4>
+                            <div id="monthly-petrol-logs"
+                                style="background: rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:0.85rem;">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="toast-container" class="toast-container"></div>
+
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

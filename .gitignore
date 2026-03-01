@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+*.db
+sahayak_ledger.db
+node_modules/
+dist/
+build/
+*.log
