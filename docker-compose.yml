@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  sahayak-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sahayak_core
+    volumes:
+      - ./backend:/app
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri:/dev/dri"
+    shm_size: '2gb'
+    environment:
+      - REDIS_HOST=redis_scratchpad
+      - DB_URL=postgresql://user:pass@db_sahayak:5432/sahayak
+      - HSA_OVERRIDE_GFX_VERSION=10.3.0 # Example for AMD RDNA2/3 compatibility
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis_scratchpad
+      - db_sahayak
+
+  redis_scratchpad:
+    image: redis:7.2-alpine
+    container_name: sahayak_redis
+    ports:
+      - "6379:6379"
+
+  db_sahayak:
+    image: postgres:16-alpine
+    container_name: sahayak_pg
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=sahayak
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

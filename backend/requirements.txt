@@ -1,0 +1,18 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+crewai==0.11.1
+redis==5.0.1
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+onnxruntime-directml==1.17.0  # Optimized for AMD Ryzen NPU/GPU
+torch --index-url https://download.pytorch.org/whl/rocm5.7  # ROCm support
+numpy==1.26.3
+pydantic==2.5.3
+python-dotenv==1.0.1
+websockets==12.0
+loguru==0.7.2
+bleak==0.21.1  # For Mesh-Net BLE
+pyaudio==0.2.14 # For Acoustic Diagnostics
+librosa==0.10.1 # For Audio Feature Extraction
+cryptography==42.0.2 # For Tamper-Proof Ledger
+twilio==8.11.0 # For SMS Fallback
