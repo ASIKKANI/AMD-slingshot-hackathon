@@ -4,7 +4,7 @@
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key  
 
 - **Optimizer Agent:** Calculates **Real Hourly Rate (RHR)** in real-time by analyzing incoming gig pings, accounting for fuel costs and vehicle depreciation.
 - **Biometric Sentinel:** Uses **AMD Ryzen™ AI NPU** to perform on-device fatigue detection from accelerometer and gyro data, prioritizing worker safety.
